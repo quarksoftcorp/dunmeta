@@ -50,7 +50,7 @@ export async function searchCharacters(serverId: string, characterName: string):
     }
 
     const data = await response.json() as CharacterSearchResponse;
-    return data || { rows: [] };
+    return { rows: data?.rows || [] };
   } catch (error) {
     console.error(`Neople Character Search exception on ${path}:`, error);
     return { rows: [] };

@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:firebase": "tsx scripts/test-firebase.ts"
+    "test:firebase": "tsx scripts/test-firebase.ts",
+    "test:neople": "tsx scripts/test-neople.ts"
   },
   "dependencies": {
     "firebase": "^12.15.0",
