@@ -5,14 +5,18 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
     const snapshot = await firestore.collection('popular_characters')
-      .where('searchCount', '>=', 1)
-      .orderBy('searchCount', 'desc')
-      .limit(10)
+      .where('lastSearchedAt', '>=', oneDayAgo)
+      .limit(100)
       .get();
 
-    const list = snapshot.docs.map(doc => {
-      const data = doc.data();
+    const docsData = snapshot.docs.map(doc => doc.data());
+    const sorted = docsData
+      .sort((a, b) => (b.searchCount || 0) - (a.searchCount || 0))
+      .slice(0, 10);
+
+    const list = sorted.map(data => {
       return {
         characterId: data.characterId || '',
         serverId: data.serverId || '',

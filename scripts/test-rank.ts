@@ -37,27 +37,19 @@ const mockDocs = mockDocsData.map(data => ({
 }));
 
 let whereCalled = false;
-let orderByCalled = false;
 let limitCalled = false;
 
 const mockQuery: any = {
   where: (field: string, op: string, value: any) => {
     console.log(`[Mock Query] where called: ${field} ${op} ${value}`);
-    if (field === 'searchCount' && op === '>=' && value === 1) {
+    if (field === 'lastSearchedAt' && op === '>=' && value instanceof Date) {
       whereCalled = true;
-    }
-    return mockQuery;
-  },
-  orderBy: (field: string, direction: string) => {
-    console.log(`[Mock Query] orderBy called: ${field} ${direction}`);
-    if (field === 'searchCount' && direction === 'desc') {
-      orderByCalled = true;
     }
     return mockQuery;
   },
   limit: (count: number) => {
     console.log(`[Mock Query] limit called: ${count}`);
-    if (count === 10) {
+    if (count === 100) {
       limitCalled = true;
     }
     return mockQuery;
@@ -119,9 +111,8 @@ async function run() {
     });
 
     // Check query calls
-    if (!whereCalled) throw new Error('where clause for searchCount >= 1 was not called or mismatched parameters');
-    if (!orderByCalled) throw new Error('orderBy clause for searchCount desc was not called or mismatched parameters');
-    if (!limitCalled) throw new Error('limit clause for 10 was not called or mismatched parameters');
+    if (!whereCalled) throw new Error('where clause for lastSearchedAt >= 24h was not called or mismatched parameters');
+    if (!limitCalled) throw new Error('limit clause for 100 was not called or mismatched parameters');
 
     console.log('All tests passed successfully!');
     process.exit(0);

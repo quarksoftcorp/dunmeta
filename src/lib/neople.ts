@@ -45,15 +45,14 @@ export async function searchCharacters(serverId: string, characterName: string):
     });
 
     if (!response.ok) {
-      console.error(`Neople Character Search failed: [${response.status}] ${response.statusText} on ${path}`);
-      return { rows: [] };
+      throw new Error(`Neople Character Search failed: [${response.status}] ${response.statusText}`);
     }
 
     const data = await response.json() as CharacterSearchResponse;
     return { rows: data?.rows || [] };
   } catch (error) {
     console.error(`Neople Character Search exception on ${path}:`, error);
-    return { rows: [] };
+    throw error;
   }
 }
 

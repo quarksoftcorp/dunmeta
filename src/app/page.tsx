@@ -369,7 +369,6 @@ export default function Home() {
               <div className="space-y-3">
                 {rankings.map((char, index) => {
                   const rank = index + 1;
-                  const isTop3 = rank <= 3;
                   const badgeColor =
                     rank === 1
                       ? 'bg-amber-500/10 border-amber-500/25 text-amber-600 dark:text-amber-400 font-extrabold'
