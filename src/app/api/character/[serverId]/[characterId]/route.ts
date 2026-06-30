@@ -28,7 +28,7 @@ export async function GET(
           lastRequested: now,
         };
         await cacheRef.set(newCache);
-        await trackSearch(serverId, characterId, freshData.basicInfo);
+        await trackSearch(serverId, characterId, freshData.basicInfo).catch(console.error);
         return NextResponse.json({ data: newCache, stale: false });
       } catch (err: any) {
         console.error('Error in character API route (cache miss):', err);
@@ -63,7 +63,7 @@ export async function GET(
           lastRequested: now,
         };
         await cacheRef.set(updatedCache);
-        await trackSearch(serverId, characterId, freshData.basicInfo);
+        await trackSearch(serverId, characterId, freshData.basicInfo).catch(console.error);
         return NextResponse.json({ data: updatedCache, stale: false });
       } catch (err: any) {
         console.error('Error in character API route (force refresh):', err);
