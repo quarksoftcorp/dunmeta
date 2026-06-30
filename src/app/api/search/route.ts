@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import { searchCharacters } from '@/lib/neople';
 
 export async function GET(req: NextRequest) {
@@ -16,8 +16,9 @@ export async function GET(req: NextRequest) {
 
     const result = await searchCharacters(server, name);
     return NextResponse.json(result);
-  } catch (err: any) {
+  } catch (err) {
     console.error('Error in search API route:', err);
-    return NextResponse.json({ error: err.message || 'Internal Server Error' }, { status: 500 });
+    const errorMessage = err instanceof Error ? err.message : 'Internal Server Error';
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
