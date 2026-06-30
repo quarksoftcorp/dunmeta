@@ -1,8 +1,6 @@
-﻿import { config } from 'dotenv';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { config } from 'dotenv';
 config({ path: '.env.local' });
-
-// 1. Mock Firestore before importing the GET route
-import { firestore } from '../src/lib/firebase-admin';
 
 const mockDocsData = [
   {
@@ -72,19 +70,19 @@ const mockQuery: any = {
   }
 };
 
-firestore.collection = (collectionName: string): any => {
-  console.log(`[Mock Firestore] collection called: ${collectionName}`);
-  if (collectionName === 'popular_characters') {
-    return mockQuery;
-  }
-  throw new Error(`Unexpected collection query: ${collectionName}`);
-};
-
-// 2. Import the GET handler from the API route
-import { GET } from '../src/app/api/rank/route';
-
 async function run() {
   try {
+    const { firestore } = await import('../src/lib/firebase-admin');
+    
+    firestore.collection = (collectionName: string): any => {
+      console.log(`[Mock Firestore] collection called: ${collectionName}`);
+      if (collectionName === 'popular_characters') {
+        return mockQuery;
+      }
+      throw new Error(`Unexpected collection query: ${collectionName}`);
+    };
+
+    const { GET } = await import('../src/app/api/rank/route');
     console.log('Starting Ranking API Route verification...');
 
     // Call GET handler
