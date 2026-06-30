@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
@@ -22,12 +23,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     const activeTheme = (storedTheme === 'light' || storedTheme === 'dark') ? storedTheme : systemTheme;
 
-    const timer = setTimeout(() => {
-      setThemeState(activeTheme);
-      setMounted(true);
-    }, 0);
-
-    return () => clearTimeout(timer);
+    setThemeState(activeTheme);
+    setMounted(true);
   }, []);
 
   const setTheme = (newTheme: Theme) => {
@@ -80,10 +77,7 @@ export function ThemeToggle() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setMounted(true);
-    }, 0);
-    return () => clearTimeout(timer);
+    setMounted(true);
   }, []);
 
   if (!mounted) {

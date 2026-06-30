@@ -40,7 +40,7 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body className="min-h-full flex flex-col bg-white text-neutral-900 dark:bg-neutral-950 dark:text-neutral-50 transition-colors duration-200">
+      <body className="min-h-full flex flex-col bg-background text-foreground transition-colors duration-200">
         <ThemeProvider>
           <GoogleAnalytics />
           <header className="sticky top-0 z-50 w-full border-b border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-950/80 backdrop-blur-md transition-colors duration-200">
