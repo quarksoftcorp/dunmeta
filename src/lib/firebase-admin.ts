@@ -10,18 +10,26 @@ const privateKey = process.env.FIREBASE_PRIVATE_KEY
 const databaseURL = process.env.FIREBASE_DATABASE_URL || `https://${projectId}-default-rtdb.firebaseio.com`;
 
 if (!getApps().length) {
-  if (clientEmail && privateKey) {
+  try {
+    if (clientEmail && privateKey && !privateKey.includes('...')) {
+      initializeApp({
+        credential: cert({
+          projectId,
+          clientEmail,
+          privateKey,
+        }),
+        databaseURL,
+      });
+    } else {
+      initializeApp({
+        credential: applicationDefault(),
+        databaseURL,
+      });
+    }
+  } catch (err) {
+    console.warn('Firebase Admin initialization failed, falling back to basic initialization:', err);
     initializeApp({
-      credential: cert({
-        projectId,
-        clientEmail,
-        privateKey,
-      }),
-      databaseURL,
-    });
-  } else {
-    initializeApp({
-      credential: applicationDefault(),
+      projectId,
       databaseURL,
     });
   }
