@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test:firebase": "tsx scripts/test-firebase.ts",
-    "test:neople": "tsx scripts/test-neople.ts"
+    "test:neople": "tsx scripts/test-neople.ts",
+    "test:rank": "tsx scripts/test-rank.ts"
   },
   "dependencies": {
     "firebase": "^12.15.0",

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import { db, firestore } from '@/lib/firebase-admin';
 import { fetchCharacterFullData } from '@/lib/neople';
 import * as adminFirestore from 'firebase-admin/firestore';
@@ -30,9 +30,9 @@ export async function GET(
         await cacheRef.set(newCache);
         await trackSearch(serverId, characterId, freshData.basicInfo).catch(console.error);
         return NextResponse.json({ data: newCache, stale: false });
-      } catch (err: any) {
+      } catch (err) {
         console.error('Error in character API route (cache miss):', err);
-        const errMessage = err.message || '';
+        const errMessage = err instanceof Error ? err.message : '';
         const isNotFound = errMessage.toLowerCase().includes('not found') || 
                            errMessage.includes('Character basic info not found');
         if (isNotFound) {
@@ -65,12 +65,12 @@ export async function GET(
         await cacheRef.set(updatedCache);
         await trackSearch(serverId, characterId, freshData.basicInfo).catch(console.error);
         return NextResponse.json({ data: updatedCache, stale: false });
-      } catch (err: any) {
+      } catch (err) {
         console.error('Error in character API route (force refresh):', err);
         // Revert lastRequested to previous value on failure
         await cacheRef.child('lastRequested').set(lastRequested);
 
-        const errMessage = err.message || '';
+        const errMessage = err instanceof Error ? err.message : '';
         const isNotFound = errMessage.toLowerCase().includes('not found') || 
                            errMessage.includes('Character basic info not found');
         if (isNotFound) {
@@ -93,24 +93,32 @@ export async function GET(
       stale: isStale,
       canRefresh: isStale && canRefresh,
     });
-  } catch (err: any) {
+  } catch (err) {
     console.error('Fatal error in character API route:', err);
-    return NextResponse.json({ error: err.message || 'Internal Server Error' }, { status: 500 });
+    const errorMessage = err instanceof Error ? err.message : 'Internal Server Error';
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
 
 // Firestore 인기 캐릭터 정보 적재 헬퍼
-async function trackSearch(serverId: string, characterId: string, basicInfo: any) {
+async function trackSearch(serverId: string, characterId: string, basicInfo: unknown) {
   if (!basicInfo) return;
+  const info = basicInfo as {
+    characterName?: string;
+    jobGrowName?: string;
+    adventureFame?: number;
+    fame?: number;
+    level?: number;
+  };
   const docRef = firestore.collection('popular_characters').doc(`${serverId}_${characterId}`);
   const now = new Date();
   await docRef.set({
     characterId,
     serverId,
-    characterName: basicInfo.characterName || '이름 없음',
-    jobGrowName: basicInfo.jobGrowName || '무직',
-    fame: basicInfo.adventureFame || basicInfo.fame || 0,
-    level: basicInfo.level || 1,
+    characterName: info.characterName || '이름 없음',
+    jobGrowName: info.jobGrowName || '무직',
+    fame: info.adventureFame || info.fame || 0,
+    level: info.level || 1,
     searchCount: adminFirestore.FieldValue.increment(1),
     lastSearchedAt: adminFirestore.Timestamp.fromDate(now),
   }, { merge: true });
