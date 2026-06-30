@@ -32,6 +32,7 @@ async function run() {
       console.log('- buffEquipment:', fullData.buffEquipment ? 'OK' : 'Failed/Null');
       console.log('- buffAvatar:', fullData.buffAvatar ? 'OK' : 'Failed/Null');
       console.log('- buffCreature:', fullData.buffCreature ? 'OK' : 'Failed/Null');
+      console.log('- timeline:', fullData.timeline ? 'OK' : 'Failed/Null');
     } else {
       console.error('Error: No characters found, cannot proceed to test fetchCharacterFullData.');
     }

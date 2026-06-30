@@ -28,6 +28,7 @@ export interface CharacterFullData {
   buffEquipment: unknown;
   buffAvatar: unknown;
   buffCreature: unknown;
+  timeline: unknown;
 }
 
 /**
@@ -120,6 +121,7 @@ export async function fetchCharacterFullData(serverId: string, characterId: stri
     `/df/servers/${serverId}/characters/${characterId}/skill/buff/equip/equipment`,
     `/df/servers/${serverId}/characters/${characterId}/skill/buff/equip/avatar`,
     `/df/servers/${serverId}/characters/${characterId}/skill/buff/equip/creature`,
+    `/df/servers/${serverId}/characters/${characterId}/timeline`,
   ];
 
   const basicInfoPromise = fetchBasicInfo(endpoints[0]);
@@ -132,6 +134,7 @@ export async function fetchCharacterFullData(serverId: string, characterId: stri
   const buffEquipmentPromise = fetchOrNull(endpoints[7]);
   const buffAvatarPromise = fetchOrNull(endpoints[8]);
   const buffCreaturePromise = fetchOrNull(endpoints[9]);
+  const timelinePromise = fetchOrNull(endpoints[10]);
 
   const [
     basicInfo,
@@ -143,7 +146,8 @@ export async function fetchCharacterFullData(serverId: string, characterId: stri
     skillStyle,
     buffEquipment,
     buffAvatar,
-    buffCreature
+    buffCreature,
+    timeline
   ] = await Promise.all([
     basicInfoPromise,
     statusPromise,
@@ -155,6 +159,7 @@ export async function fetchCharacterFullData(serverId: string, characterId: stri
     buffEquipmentPromise,
     buffAvatarPromise,
     buffCreaturePromise,
+    timelinePromise,
   ]);
 
   return {
@@ -167,6 +172,7 @@ export async function fetchCharacterFullData(serverId: string, characterId: stri
     skillStyle,
     buffEquipment,
     buffAvatar,
-    buffCreature
+    buffCreature,
+    timeline
   };
 }
