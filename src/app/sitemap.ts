@@ -1,5 +1,7 @@
-﻿import type { MetadataRoute } from 'next';
+import type { MetadataRoute } from 'next';
 import { firestore } from '@/lib/firebase-admin';
+
+export const revalidate = 86400; // Revalidate at most once per day
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const routes: MetadataRoute.Sitemap = [
@@ -24,9 +26,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       const serverId = data.serverId;
       const characterId = data.characterId;
       if (serverId && characterId) {
+        const lastModified = (data.lastSearchedAt && typeof data.lastSearchedAt.toDate === 'function')
+          ? data.lastSearchedAt.toDate()
+          : new Date();
+
         routes.push({
           url: `https://dnf-meta.com/character/${serverId}/${characterId}`,
-          lastModified: data.lastSearchedAt ? data.lastSearchedAt.toDate() : new Date(),
+          lastModified,
           changeFrequency: 'weekly',
           priority: 0.8,
         });
