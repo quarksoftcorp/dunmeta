@@ -11,8 +11,37 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "던파메타 - 던전앤파이터 캐릭터 검색 및 랭킹",
+  title: {
+    default: "던파 캐릭터 검색 사이트 - 던파메타",
+    template: "%s | 던파메타"
+  },
   description: "던전앤파이터 캐릭터 검색, 장비 세팅, 아바타, 랭킹 정보를 실시간으로 확인하세요. 네오플 오픈 API 기반 프리미엄 던파 전적 검색 서비스.",
+  keywords: ["던파", "던전앤파이터", "던파메타", "던파 캐릭터 검색", "던파 랭킹", "던파 템세팅", "던파 아바타"],
+  alternates: {
+    canonical: "https://dnf-meta.com",
+  },
+  openGraph: {
+    type: "website",
+    locale: "ko_KR",
+    url: "https://dnf-meta.com",
+    title: "던파 캐릭터 검색 사이트 - 던파메타",
+    description: "던전앤파이터 캐릭터 검색, 장비 세팅, 아바타, 랭킹 정보를 실시간으로 확인하세요.",
+    siteName: "던파메타",
+    images: [
+      {
+        url: "https://dnf-meta.com/icon.png",
+        width: 512,
+        height: 512,
+        alt: "던파메타 로고",
+      }
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "던파 캐릭터 검색 사이트 - 던파메타",
+    description: "던전앤파이터 캐릭터 검색, 장비 세팅, 아바타, 랭킹 정보를 실시간으로 확인하세요.",
+    images: ["https://dnf-meta.com/icon.png"],
+  },
 };
 
 const themeScript = `
@@ -39,6 +68,27 @@ export default function RootLayout({
     <html lang="ko" className={`${inter.variable} h-full antialiased`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              "name": "던파메타",
+              "alternateName": "Dunmeta",
+              "url": "https://dnf-meta.com",
+              "description": "던전앤파이터 캐릭터 검색 및 실시간 템세팅/랭킹 조회 서비스",
+              "potentialAction": {
+                "@type": "SearchAction",
+                "target": {
+                  "@type": "EntryPoint",
+                  "urlTemplate": "https://dnf-meta.com/?characterName={search_term_string}"
+                },
+                "query-input": "required name=search_term_string"
+              }
+            })
+          }}
+        />
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground transition-colors duration-200">
         <ThemeProvider>
