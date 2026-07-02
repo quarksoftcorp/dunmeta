@@ -4,6 +4,7 @@ import { db, firestore } from '@/lib/firebase-admin';
 import { fetchCharacterFullData } from '@/lib/neople';
 import * as adminFirestore from 'firebase-admin/firestore';
 import CharacterDashboard from './CharacterDashboard';
+import JsonLd from '@/components/JsonLd';
 
 const SERVERS = [
   { id: 'all', name: '전체 서버' },
@@ -114,7 +115,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (result.error || !result.data || !result.data.basicInfo) {
     return {
-      title: '캐릭터 정보 없음 - 던파메타',
+      title: '캐릭터 정보 없음',
       description: '요청하신 캐릭터 정보를 불러올 수 없거나 검색 기록이 없습니다.',
     };
   }
@@ -124,10 +125,32 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const job = basicInfo.jobGrowName || '직업 정보 없음';
   const serverObj = SERVERS.find((s) => s.id === serverId);
   const serverName = serverObj ? serverObj.name : serverId;
+  const characterImageUrl = `https://img-api.neople.co.kr/df/servers/${serverId}/characters/${characterId}?zoom=1`;
 
   return {
-    title: `${name} (${serverName}) - ${job} | 던파메타`,
+    title: `${name} (${serverName}) - ${job}`,
     description: `${serverName} 서버의 ${name} (${job}) 캐릭터 상세 정보 및 장비 세팅, 아바타, 버프 강화를 실시간으로 확인하세요.`,
+    alternates: {
+      canonical: `https://dnf-meta.com/character/${serverId}/${characterId}`,
+    },
+    openGraph: {
+      title: `${name} (${serverName}) | 던파메타`,
+      description: `${serverName} 서버 ${name} (${job}) 캐릭터의 실시간 전적 및 템세팅 정보를 확인하세요.`,
+      url: `https://dnf-meta.com/character/${serverId}/${characterId}`,
+      type: 'profile',
+      images: [
+        {
+          url: characterImageUrl,
+          alt: `${name} 캐릭터 이미지`,
+        }
+      ],
+    },
+    twitter: {
+      card: 'summary',
+      title: `${name} (${serverName}) | 던파메타`,
+      description: `${serverName} 서버 ${name} (${job}) 캐릭터의 실시간 전적 및 템세팅 정보를 확인하세요.`,
+      images: [characterImageUrl],
+    }
   };
 }
 
@@ -135,12 +158,51 @@ export default async function CharacterPage({ params }: PageProps) {
   const { serverId, characterId } = await params;
   const result = await getCharacterData(serverId, characterId);
 
+  const basicInfo = result.data?.basicInfo;
+  const name = basicInfo?.characterName || '이름 없음';
+  const job = basicInfo?.jobGrowName || '직업 정보 없음';
+  const serverObj = SERVERS.find((s) => s.id === serverId);
+  const serverName = serverObj ? serverObj.name : serverId;
+
+  const jsonLd = result.data ? {
+    "@context": "https://schema.org",
+    "@type": "ProfilePage",
+    "mainEntity": {
+      "@type": "Person",
+      "name": name,
+      "identifier": characterId,
+      "description": `${serverName} 서버의 ${job} 캐릭터`,
+      "image": `https://img-api.neople.co.kr/df/servers/${serverId}/characters/${characterId}?zoom=1`,
+      "knowsAbout": ["던전앤파이터", "장비 세팅", "아바타", "버프 강화"]
+    },
+    "breadcrumb": {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "홈",
+          "item": "https://dnf-meta.com"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": `${serverName} 캐릭터`,
+          "item": `https://dnf-meta.com/character/${serverId}/${characterId}`
+        }
+      ]
+    }
+  } : null;
+
   return (
-    <CharacterDashboard
-      serverId={serverId}
-      characterId={characterId}
-      initialData={result.data ? { data: result.data, stale: result.stale, canRefresh: result.canRefresh } : null}
-      initialError={result.error}
-    />
+    <>
+      {jsonLd && <JsonLd data={jsonLd} />}
+      <CharacterDashboard
+        serverId={serverId}
+        characterId={characterId}
+        initialData={result.data ? { data: result.data, stale: result.stale, canRefresh: result.canRefresh } : null}
+        initialError={result.error}
+      />
+    </>
   );
 }
