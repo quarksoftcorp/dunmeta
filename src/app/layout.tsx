@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import Link from "next/link";
 import { ThemeProvider, ThemeToggle } from "@/components/theme-provider";
 import GoogleAnalytics from "@/components/google-analytics";
+import JsonLd from "@/components/JsonLd";
 import "./globals.css";
 
 const inter = Inter({
@@ -42,6 +43,12 @@ export const metadata: Metadata = {
     description: "던전앤파이터 캐릭터 검색, 장비 세팅, 아바타, 랭킹 정보를 실시간으로 확인하세요.",
     images: ["https://dnf-meta.com/icon.png"],
   },
+  verification: {
+    google: '3O-ndFs8wlqtrsPSTC0Q9_Uf71f4F-O6Y2tOQ9OQikM',
+    other: {
+      'naver-site-verification': '3a967e01d44ffdf854edf671ae11c286ba1c8400',
+    },
+  },
 };
 
 const themeScript = `
@@ -68,25 +75,22 @@ export default function RootLayout({
     <html lang="ko" className={`${inter.variable} h-full antialiased`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "WebSite",
-              "name": "던파메타",
-              "alternateName": "Dunmeta",
-              "url": "https://dnf-meta.com",
-              "description": "던전앤파이터 캐릭터 검색 및 실시간 템세팅/랭킹 조회 서비스",
-              "potentialAction": {
-                "@type": "SearchAction",
-                "target": {
-                  "@type": "EntryPoint",
-                  "urlTemplate": "https://dnf-meta.com/?characterName={search_term_string}"
-                },
-                "query-input": "required name=search_term_string"
-              }
-            })
+        <JsonLd
+          data={{
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "name": "던파메타",
+            "alternateName": "Dunmeta",
+            "url": "https://dnf-meta.com",
+            "description": "던전앤파이터 캐릭터 검색 및 실시간 템세팅/랭킹 조회 서비스",
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": {
+                "@type": "EntryPoint",
+                "urlTemplate": "https://dnf-meta.com/?characterName={search_term_string}"
+              },
+              "query-input": "required name=search_term_string"
+            }
           }}
         />
       </head>

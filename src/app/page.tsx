@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Search,
   ChevronDown,
@@ -97,8 +97,9 @@ const MOCK_NOTICES = [
   }
 ];
 
-export default function Home() {
+function HomeContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [searchServer, setSearchServer] = useState('all');
   const [searchName, setSearchName] = useState('');
   const [loading, setLoading] = useState(false);
@@ -136,9 +137,8 @@ export default function Home() {
     fetchRankings();
   }, []);
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!searchName.trim()) {
+  const executeSearch = useCallback(async (server: string, name: string) => {
+    if (!name.trim()) {
       setSearchError('캐릭터명을 입력해주세요.');
       return;
     }
@@ -149,7 +149,7 @@ export default function Home() {
     setHasSearched(false);
 
     try {
-      const url = `/api/search?server=${encodeURIComponent(searchServer)}&name=${encodeURIComponent(searchName.trim())}`;
+      const url = `/api/search?server=${encodeURIComponent(server)}&name=${encodeURIComponent(name.trim())}`;
       const res = await fetch(url);
       if (!res.ok) {
         throw new Error('검색 요청 중 오류가 발생했습니다.');
@@ -174,7 +174,23 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
+  }, [router]);
+
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await executeSearch(searchServer, searchName);
   };
+
+  useEffect(() => {
+    const characterName = searchParams.get('characterName');
+    if (characterName) {
+      setTimeout(() => {
+        setSearchName(characterName);
+        executeSearch(searchServer, characterName);
+      }, 0);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const getServerName = (serverId: string) => {
     return SERVERS.find((s) => s.id === serverId)?.name || serverId;
@@ -496,5 +512,13 @@ export default function Home() {
       </section>
 
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={null}>
+      <HomeContent />
+    </Suspense>
   );
 }
