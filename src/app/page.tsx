@@ -176,21 +176,30 @@ function HomeContent() {
     }
   }, [router]);
 
-  const handleSearch = async (e: React.FormEvent) => {
+  const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    await executeSearch(searchServer, searchName);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('characterName', searchName.trim());
+    if (searchServer !== 'all') {
+      params.set('server', searchServer);
+    } else {
+      params.delete('server');
+    }
+    router.push(`/?${params.toString()}`);
   };
 
   useEffect(() => {
     const characterName = searchParams.get('characterName');
+    const server = searchParams.get('server');
+
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSearchName(characterName || '');
+    setSearchServer(server || 'all');
+
     if (characterName) {
-      setTimeout(() => {
-        setSearchName(characterName);
-        executeSearch(searchServer, characterName);
-      }, 0);
+      executeSearch(server || 'all', characterName);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
+  }, [searchParams, executeSearch]);
 
   const getServerName = (serverId: string) => {
     return SERVERS.find((s) => s.id === serverId)?.name || serverId;

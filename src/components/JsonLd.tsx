@@ -1,7 +1,8 @@
 import React from 'react';
 
 interface JsonLdProps {
-  data: Record<string, unknown>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  data: Record<string, any> | Record<string, any>[];
 }
 
 export default function JsonLd({ data }: JsonLdProps) {
