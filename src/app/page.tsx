@@ -137,7 +137,7 @@ function HomeContent() {
     fetchRankings();
   }, []);
 
-  const executeSearch = useCallback(async (server: string, name: string) => {
+  const executeSearch = useCallback(async (server: string, name: string, signal?: AbortSignal) => {
     if (!name.trim()) {
       setSearchError('캐릭터명을 입력해주세요.');
       return;
@@ -150,12 +150,14 @@ function HomeContent() {
 
     try {
       const url = `/api/search?server=${encodeURIComponent(server)}&name=${encodeURIComponent(name.trim())}`;
-      const res = await fetch(url);
+      const res = await fetch(url, { signal });
       if (!res.ok) {
         throw new Error('검색 요청 중 오류가 발생했습니다.');
       }
       const data = await res.json();
       const rows: CharacterSearchRow[] = data.rows || [];
+
+      if (signal?.aborted) return;
 
       if (rows.length === 0) {
         setSearchError('일치하는 캐릭터가 없습니다. 서버 및 캐릭터명을 다시 확인해 주세요.');
@@ -169,10 +171,15 @@ function HomeContent() {
       }
       setHasSearched(true);
     } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        return;
+      }
       console.error(err);
       setSearchError(err instanceof Error ? err.message : '서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) {
+        setLoading(false);
+      }
     }
   }, [router]);
 
@@ -188,23 +195,45 @@ function HomeContent() {
     router.push(`/?${params.toString()}`);
   };
 
-  useEffect(() => {
-    const characterName = searchParams.get('characterName');
-    const server = searchParams.get('server');
+  const characterName = searchParams.get('characterName');
+  const server = searchParams.get('server');
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+  const [prevCharacterName, setPrevCharacterName] = useState<string | null>(null);
+  const [prevServer, setPrevServer] = useState<string | null>(null);
+
+  if (characterName !== prevCharacterName) {
+    setPrevCharacterName(characterName);
     setSearchName(characterName || '');
+  }
+  if (server !== prevServer) {
+    setPrevServer(server);
     setSearchServer(server || 'all');
+  }
+
+  useEffect(() => {
+    const controller = new AbortController();
 
     if (characterName) {
-      executeSearch(server || 'all', characterName);
+      Promise.resolve().then(() => {
+        if (!controller.signal.aborted) {
+          executeSearch(server || 'all', characterName, controller.signal);
+        }
+      });
     } else {
-      setSearchResults([]);
-      setHasSearched(false);
-      setSearchError('');
-      setLoading(false);
+      Promise.resolve().then(() => {
+        if (!controller.signal.aborted) {
+          setSearchResults([]);
+          setHasSearched(false);
+          setSearchError('');
+          setLoading(false);
+        }
+      });
     }
-  }, [searchParams, executeSearch]);
+
+    return () => {
+      controller.abort();
+    };
+  }, [characterName, server, executeSearch]);
 
   const getServerName = (serverId: string) => {
     return SERVERS.find((s) => s.id === serverId)?.name || serverId;
