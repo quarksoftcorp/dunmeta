@@ -198,6 +198,11 @@ function HomeContent() {
 
     if (characterName) {
       executeSearch(server || 'all', characterName);
+    } else {
+      setSearchResults([]);
+      setHasSearched(false);
+      setSearchError('');
+      setLoading(false);
     }
   }, [searchParams, executeSearch]);
 
